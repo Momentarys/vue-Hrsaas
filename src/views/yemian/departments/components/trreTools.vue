@@ -34,6 +34,7 @@
 </template>
 
 <script>
+import { delDepartmentsAPI } from '@/api/departments'
 export default {
   name: 'HRsaasTerrTools',
   props: {
@@ -55,6 +56,7 @@ export default {
     }
   },
   methods: {
+    // 弹出框
     handleCommand(type) {
       console.log(type)
       if (type === 'add') {
@@ -66,8 +68,22 @@ export default {
         this.$emit('addDept', this.treeData)
       } else if (type === 'edit') {
       // 编辑
+        this.$emit('editDepts', this.treeData)
       } else {
-      // 删除
+        // 删除
+        // 实现删除逻辑
+        // 二次确认
+        this.$confirm('是否确认删除该部门', '提示', {
+          type: 'warning'
+        }).then(res => {
+          return delDepartmentsAPI(this.treeData.id)
+          // console.log(res)
+        }).then(res => {
+          console.log(res)
+          this.$message.success('删除成功')
+          // 父组件 getDepartments
+          this.$emit('refreshList')
+        })
       }
     }
   }

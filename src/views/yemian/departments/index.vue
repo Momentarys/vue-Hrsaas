@@ -1,5 +1,5 @@
 <template>
-  <div class="departments-container">
+  <div v-loading="loading" class="departments-container">
     <el-card>
       <!-- 组件布局 头部 -->
       <!-- 添加自定义事件布尔值为false -->
@@ -9,10 +9,10 @@
       <!-- 子组件 -->
       <!-- 自定义点击事件 利用父组件 修改兄弟组件的值 弹出框 -->
       <!-- data -->
-      <treeTools slot-scope="{data}" :tree-data="data" @addDept="handleAddDept" />
+      <treeTools slot-scope="{data}" :tree-data="data" @addDept="handleAddDept" @editDepts="editDepts" @refreshList="getDepartments" />
     </el-tree>
     <!-- 父传子 点击为true 显示弹出框 -->
-    <add-dept :dialog-visible.sync="dialogVisible" :tree-data="currentData" />
+    <add-dept ref="addDept" :dialog-visible.sync="dialogVisible" :tree-data="currentData" />
   </div>
 </template>
 
@@ -36,7 +36,8 @@ export default {
       title: { name: '江苏传智播客教育科技股份有限公司', manager: '负责人' },
       // 添加编辑删除三项的弹出框
       dialogVisible: false,
-      currentData: {}
+      currentData: {},
+      loading: false
     }
   },
   mounted() {
@@ -45,11 +46,17 @@ export default {
   methods: {
     // 那组织架构的数据
     async getDepartments() {
-      // 解构组织架构数据
-      const { depts, companyName, companyManage } = await getDepartmentsAPI()
-      this.departs = tranListToTreeData(depts, '')
-      // 头部获取接口数据
-      this.title = { name: companyName, manager: companyManage, id: '' }
+      try {
+        this.loading = true
+        // 解构组织架构数据
+        const { depts, companyName, companyManage } = await getDepartmentsAPI()
+        this.departs = tranListToTreeData(depts, '')
+        // 头部获取接口数据
+        this.title = { name: companyName, manager: companyManage, id: '' }
+      } finally {
+        this.loading = false
+      }
+
       // 需要将其转化成树形结构
       // console.log(this.departs)
     },
@@ -58,7 +65,18 @@ export default {
       // 点击为true显示弹出框
       this.dialogVisible = true
       this.currentData = data
-      // console.log(this.currentData)
+      console.log(data)
+    },
+    // 自定义事件 编辑node内容赋值给 子组件formData
+    editDepts(node) {
+      console.log(node)
+      // 当前节点
+      this.dialogVisible = true
+      this.currentData = { ...node }
+      // 回现数据
+      // node 复制 给addDept formData
+      this.$refs.addDept.formData = { ...node }
+      // console.log(this.formData)
     }
   }
 }

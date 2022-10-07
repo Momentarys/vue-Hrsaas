@@ -1,6 +1,6 @@
 <template>
   <!-- 新增部门的弹层 -->
-  <el-dialog title="新增部门" :visible="dialogVisible">
+  <el-dialog :title="title" :visible="dialogVisible">
     <!-- 表单组件  el-form   label-width设置label的宽度   -->
     <!-- 匿名插槽 -->
     <el-form ref="addDeptForm" label-width="120px" :model="formData" :rules="rules">
@@ -23,7 +23,7 @@
     <el-row slot="footer" type="flex" justify="center">
       <!-- 列被分为24 -->
       <el-col :span="6">
-        <el-button type="primary" size="small" :loading="loading">确定</el-button>
+        <el-button type="primary" size="small" :loading="loading" @click="submit">确定</el-button>
         <el-button size="small" @click="handleClose">取消</el-button>
       </el-col>
     </el-row>
@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import { getDepartmentsAPI, addDepartmentsAPI } from '@/api/departments'
+import { getDepartmentsAPI, addDepartmentsAPI, updateDepartmentsAPI } from '@/api/departments'
 import { getEmployeeSimpleAPI } from '@/api/employees'
 export default {
   // 通过属性控制组件显隐
@@ -55,27 +55,57 @@ export default {
     const codeCheck = async(rule, value, callback) => {
       // 调用接口，获取已有的角色列表
       const { depts } = await getDepartmentsAPI()
-      // 判断编码里面有没有重复的 重复返回true
-      const isRepeat = depts.some((ele) => ele.code === value)
+      let isRepeat = true
+      // 编辑模式下 让我自己和自己校验了？
+      // 解决方法 对比的过程中 把自己排除掉 然后再去对比
+      //  校验 编码是否存在
+      if (this.formData.id) {
+        // 部门名称 重复则返回true 遇真则停   value编码相等就校验不通过
+        // 如果所有的id不等于当前项的id就是 '新增状态'  如果相对就等于 '编辑状态'
+        // 当前id不等于当前节点的id
+        isRepeat = depts.some(ele => ele.id !== this.formData.id && ele.code === value)
+      } else {
+        // 判断编码里面有没有重复的 重复返回true
+        isRepeat = depts.some((ele) => ele.code === value)
+      }
       // 有报错提示，反则
       isRepeat ? callback(new Error(`模块已经存在${value}编码`)) : callback()
     }
 
     // 现在定义一个函数 这个函数的目的是 去找 同级部门下 是否有重复的部门名称
+    // 检查编码重复
+    // 部门名称同级部门中禁止出现重复部门
+    // 重点是同级部门如何从所有部门中把同级部门的数据刷选出来
+    // 先确定父ID
+    // 如何拿统计部门把同级的节点传递过来
+    // 先拿到所有 同级部门的数据 一个个的比较过去 如果出现重复则校验不通过否则校验通过
+    // 先从tree - tools拿到数据在把数据送到父组件父组件在把数据给addDept
     const checkNameRepeat = async(rule, value, callback) => {
       // 先要获取最新的组织架构数据
       const { depts } = await getDepartmentsAPI()
       // console.log(depts)
       // depts是所有的部门数据55555555
       // 如何去找技术部所有的子节点
-      //   找同级部门
-      const isRepeat = depts.filter(item => item.pid === this.treeData.id).some(item => item.name === value)
+      // 找同级部门
+      // depts==> 找到真正的同级部门
+      let isRepeat = true
+      if (this.formData.id) { // 编辑
+        // 偏辑模式下 存在的问题：无法准确校验同级部门的数据(同级的列表找的不对)
+        // 解决方案先找到所有与自己处于同级的列表，然后再排出自己 然后判断
+        // 找同级部门
+        // 排除自己 在判断名称是否重复
+        //  链式写法
+        // const deptstz = depts.filter(item => item.pid === this.treeData.id).some(item => item.name === value)
+        const deptstz = depts.filter(item => item.pid === this.treeData.pid && item.id !== this.treeData.id)
+        isRepeat = deptstz.some(item => item.name === value)
+        // isRepeat = deptstz.some()
+        console.log(deptstz)
+      } else { // 新增子部门
+        isRepeat = depts.filter(item => item.pid === this.treeData.id).some(item => item.name === value)
+        // isRepeat = deptstj.some(ele => ele.name === value)
+      }
       isRepeat ? callback(new Error(`该部门下已经有${value}的部门了`)) : callback()
     }
-    // 部门名称 同级部门中禁止出现重复部门
-    // 重点 是同级部门
-    // 如何拿统计部门把同级的节点传递过来
-    // 先拿到所有 同级部门的数据 一个个的比较过去 如果出现重复则校验不通过否则校验通过
     return {
       // 通过属性控制组件显隐
       // 父子
@@ -113,6 +143,11 @@ export default {
       loading: false
     }
   },
+  computed: {
+    title() {
+      return this.formData.id ? '编辑模式' : '新增模式'
+    }
+  },
   methods: {
     // 点击取消按钮 关闭弹窗
     handleClose() {
@@ -133,19 +168,25 @@ export default {
       // console.log(res)
       this.peoples = res
     },
+    // 点击确认 提交按钮
     async submit() {
       try {
         // 表单校验通过 validate()
         await this.$refs.addDeptForm.validate()
         // 调用接口
         this.loading = true
-        // 传入部门每项资料，和父组件传来的部门id
-        await addDepartmentsAPI({ ...this.formData, pid: this.treeData.id })
+        if (this.formData.id) {
+          await updateDepartmentsAPI(this.formData)
+        } else {
+          // 传入部门每项资料，和父组件传来的部门id
+          await addDepartmentsAPI({ ...this.formData, pid: this.treeData.id })
+        }
         // 因为是添加子部门，所以我们需要将新增的部门pid设置成当前部门的1d, 新增的部门就成了自己的子部门
         // 确定按钮的loading状态
 
         // 接口新增成功之后 消息提示成功
-        this.$massage.success('新增成功')
+        this.$message.success(`${this.formData.id ? '编辑' : '新增'}成功`)
+        this.dialogVisible = false
         // 刷新父组件的组织架构列表
         this.$parent.getDepartmentsAPI()
         // 关闭弹窗
