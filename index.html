@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        const arr = [{
+            correctionTime: "2018-11-30",
+            departmentName: "总裁办",
+            formOfEmployment: 1,
+            id: "604f764971f93f3ac8f365c2",
+            mobile: "13800000002",
+            password: "e10adc3949ba59abbe56e057f20f883e",
+            staffPhoto: "http://wuxiaohui-1254415986.cos.ap-nanjing.myqcloud.com/,%E9%AB%98%E6%B8%85%E6%98%8E.jpg",
+            timeOfEntry: "2018-11-02",
+            username: "管理员",
+            workNumber: "9002"
+        },
+        {
+
+            correctionTime: "2018-11-20",
+            departmentName: "市场部",
+            formOfEmployment: 1,
+            id: "604f764971f93f3ac8f365c3",
+            mobile: "13800000003",
+            password: "e10adc3949ba59abbe56e057f20f883e",
+            staffPhoto: "http://q6cu3t6jv.bkt.clouddn.com/1063705989926227968?t=1616204161907",
+            timeOfEntry: "2018-11-04",
+            username: "孙财",
+            workNumber: "111"
+        }]
+        // 表头的数据 
+        // 表内容的数据
+        // [[],[]]
+        // 二维数组内部的数据结构：每一行的数据，顺序和表头保持一致
+        // const header = ['姓名', '手机号', '入职日期', '聘用形式', '转正日期', '工号', '部门']
+        const header = Object.keys(exportExcelMapPath)
+        // 表内容的数据和员工列表是相同的，所以根据员工列表生成
+        const exportExcelMapPath = {
+            '手机号': 'mobile',
+            '姓名': 'username',
+            '入职日期': 'timeOfEntry',
+            '聘用形式': 'formOfEmployment',
+            '转正日期': 'correctionTime',
+            '工号': 'workNumber',
+            '部门': 'departmentName'
+        }
+        // 将对象转换成数组
+        const data = arr.map(item => {
+            // []
+            // 表头数据
+            // 循环表头是手机号
+            // item.mobile
+            // exportExcelMapPath[h] 取到表头里的表头
+            return header.map(h => {
+                return item[exportExcelMapPath[h]]
+            })
+        })
+        console.log(data);
+    </script>
+</body>
+
+</html>

@@ -12,16 +12,13 @@ import App from './App'
 import store from './store'
 import router from './router'
 
+// 公共组件全局注册  // 全局引入 自定义指令
+import PageTools from '@/components/index'
+Vue.use(PageTools)
+
 import '@/icons' // icon
 import '@/permission' // permission control
 
-//  全局引入 自定义指令
-import * as directives from '@/directives'
-// console.log(directives)
-// console.log(Object.keys(directives))
-Object.keys(directives).forEach(ele => {
-  Vue.directive(ele, directives[ele])
-})
 // import { imgerror } from '@/directives'
 // 注册组件 'imgerror' 给一个名字 添加自定义一个指令
 // Vue.directive('imgerror', imgerror)

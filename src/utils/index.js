@@ -127,9 +127,13 @@ export function tranListToTreeData(list, rootValue) {
   const arr = []
   list.forEach(ele => {
     if (ele.pid === rootValue) {
+      // 找到之后就要去找item下面有没有子节点
+      // 查找下一级人员，于本级人员id相等的即为
+
       // 需要考虑一下 ele 没有子元素呢
       const children = tranListToTreeData(list, ele.id)
       if (children.length) {
+        // 如果children的长度大于o说明找到了子节点
         ele.children = children
       }
       arr.push(ele)
