@@ -52,3 +52,51 @@ export function importEmployeeAPI(data) {
     data
   })
 }
+
+/**
+ * 获取员工个人信息
+ * @param {*} id
+ * @returns promise
+ */
+export const getEmployeesInof = (id) => {
+  return request({
+    url: `/employees/${id}/personalInfo`
+  })
+}
+
+/**
+ * 保存员工个人信息
+ * @param {*} data
+ * @returns promise
+ */
+export const saveEmployeesInof = (data) => {
+  return request({
+    url: `/employees/${data.userId}/personalInfo`,
+    method: 'put',
+    data
+  })
+}
+
+/**
+ * 获取员工岗位信息
+ * @param {Object} data {}
+ * @returns
+ */
+export const gitEmployeesJobInof = (id) => {
+  return request({
+    url: `/employees/${id}/jobs`
+  })
+}
+
+/**
+ * 保存员工岗位信息
+ * @param {*} id
+ * @returns
+ */
+export const saveEmployeesJobInof = (data) => {
+  return request({
+    url: `/employees/${data.userId}/jobs`,
+    method: 'put',
+    data
+  })
+}

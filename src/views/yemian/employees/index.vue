@@ -38,7 +38,7 @@
         </el-table-column>
         <el-table-column label="操作" fixed="right" width="280">
           <template slot-scope="{row}">
-            <el-button type="text" size="small">查看</el-button>
+            <el-button type="text" size="small" @click="goDetail(row)">查看</el-button>
             <el-button type="text" size="small">转正</el-button>
             <el-button type="text" size="small">调岗</el-button>
             <el-button type="text" size="small">离职</el-button>
@@ -149,6 +149,7 @@ export default {
         await delEmployee(id)
         // 需要刷新页面列表
         this.getEmployeeList()
+        this.$message.success('删除成功')
       } catch (error) {
         console.log(error)
       }
@@ -189,7 +190,9 @@ export default {
         return header.map(h => {
           // 如果表头的聘用形式模块  取js文件定义的属性
           if (h === '聘用形式') {
+            // 查找以下hireType id
             const find = this.hireType.find(hire => {
+              // 取到id 0正式 1非正式
               return hire.id === parseInt(item[exportExcelMapPath[h]])
             })
             return find ? find.value : '未知'
@@ -210,6 +213,11 @@ export default {
         autoWidth: true, // 宽度自适应
         bookType: 'xlsx' // 文件类型
       })
+    },
+    // 点击查看
+    goDetail(row) {
+      // 查看路由的路径
+      this.$router.push('/employees/detail/' + row.id)
     }
   }
 }

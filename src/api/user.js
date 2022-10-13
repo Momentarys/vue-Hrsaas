@@ -16,7 +16,7 @@ export function getUserInfoAPI() {
 
 /** *
  *
- * 获取用户的基本信息  现在写它 完全是为了显示头像
+ * 获取用户的基本信息
  * **/
 export function getUserDetailById(id) {
   return request({
@@ -24,6 +24,15 @@ export function getUserDetailById(id) {
   })
 }
 
-export function logout() {
-
+/**
+ * 保存员工基本信息
+ * @param {Object} data {}
+ * @returns promise
+ */
+export const saveUserDetailById = (data) => {
+  return request({
+    url: `/sys/user/${data.id}`,
+    method: 'put',
+    data
+  })
 }
