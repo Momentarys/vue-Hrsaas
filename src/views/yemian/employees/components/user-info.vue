@@ -1,5 +1,6 @@
 <template>
   <div class="user-info">
+    <i class="el-icon-printer" @click="$router.push('/employees/print/'+ userId +'?type=personal')" />
     <!-- 个人信息 -->
     <el-form label-width="220px">
       <!-- 工号 入职时间 -->
@@ -58,6 +59,7 @@
         <el-col :span="12">
           <el-form-item label="员工头像">
             <!-- 放置上传图片 -->
+            <upload-img ref="uploadAvatar" :default-url="employeesAvatar" @on-success="uploadAvatarSuccess" />
           </el-form-item>
         </el-col>
       </el-row>
@@ -88,9 +90,9 @@
         </el-form-item>
         <!-- 个人头像 -->
         <!-- 员工照片 -->
-
         <el-form-item label="员工照片">
           <!-- 放置上传图片 -->
+          <upload-img ref="uploadPic" :default-url="employeesPic" @on-success="uploadPicSuccess" />
         </el-form-item>
         <el-form-item label="国家/地区">
           <el-select v-model="formData.nationalArea" class="inputW2">
@@ -457,7 +459,11 @@ export default {
         isThereAnyCompetitionRestriction: '', // 有无竞业限制
         proofOfDepartureOfFormerCompany: '', // 前公司离职证明
         remarks: '' // 备注
-      }
+      },
+      // 员工头像
+      employeesAvatar: '',
+      // 员工照片
+      employeesPic: ''
     }
   },
   created() {
@@ -468,16 +474,29 @@ export default {
     // 获取员工个人资料
     async loadUserInfo() {
       const res = await getUserDetailById(this.userId)
+      // 接收图片路径
+      // console.log(res)
+      if (res.staffPhoto) {
+        this.employeesAvatar = res.staffPhoto
+      }
       this.userInfo = res
     },
     // 获取员工个人信息
     async loadEmployees() {
       const res = await getEmployeesInof(this.userId)
+      // 如果有图片就把链接赋值给变量
+      if (res.staffPhoto) {
+        this.employeesPic = res.staffPhoto
+      }
       this.formData = res
     },
     // 点击保存员工个人信息
     async saveEmployeesInof() {
       try {
+        // 如果节点 图片正在加载  提示
+        if (this.$refs.uploadPic.loading) {
+          return this.$message.error('头像还在上传')
+        }
         // 调用保存员工个人信息
         await saveEmployeesInof(this.formData)
         this.$message.success('更新成功')
@@ -488,12 +507,25 @@ export default {
     // 点击保存员工基本信息
     async saveUserInfo() {
       try {
+        // 如果节点 图片正在加载  提示
+        if (this.$refs.uploadAvatar.loading) {
+          return this.$message.error('头像还在上传')
+        }
         // 调用保存员工基本信息
         await saveUserDetailById(this.userInfo)
         this.$message.success('更新成功')
       } catch (error) {
         this.$message.error('更新失败')
       }
+    },
+    // 监听头像上传成功
+    uploadAvatarSuccess(data) {
+      this.userInfo.staffPhoto = data.imgUrl
+      console.log(data)
+    },
+    // 监听员工图片上传成功
+    uploadPicSuccess(data) {
+      this.formData.staffPhoto = data.imgUrl
     }
   }
 }

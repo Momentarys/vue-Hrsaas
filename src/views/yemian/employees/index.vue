@@ -17,6 +17,11 @@
     <el-card>
       <el-table v-loading="loading" border :data="list">
         <el-table-column label="序号" sortable="" width="80" type="index" />
+        <el-table-column label="头像">
+          <template slot-scope="{row}">
+            <img style="width:100px;height:100px;" :src="row.staffPhoto" alt="" @click="genQrCode(row)">
+          </template>
+        </el-table-column>
         <el-table-column label="姓名" prop="username" />
         <el-table-column label="工号" prop="workNumber" />
         <el-table-column label="聘用形式" prop="formOfEmployment" :formatter="formatEmployment">
@@ -66,10 +71,18 @@
       </el-row>
     </el-card>
     <addEmployee :dialogvisible.sync="dialogvisible" />
+    <!-- 二维码弹出 -->
+    <el-dialog
+      title="提示"
+      :visible.sync="dialogvisibleQrCode"
+      width="50%"
+    >
+      <!-- 懒渲染：内容默认没有创建，弹层显示的时候才创建 -->
+      <canvas ref="canvas" />
+    </el-dialog>
   </div>
 
 </template>
-
 <script>
 import addEmployee from './components/add-employee.vue'
 // 引入正式非正式
@@ -81,6 +94,7 @@ import { delEmployee } from '@/api/employees'
 // 引入接口
 // 调用接口
 import { getEmployeeListAPI } from '@/api/employees'
+import QRCode from 'qrcode'
 export default {
   name: 'HrsaasIndex',
   components: { addEmployee },
@@ -99,7 +113,9 @@ export default {
       // 接收账户状态的对象
       hireType: EnumHireType.hireType,
       // 新增弹出框显示与隐藏
-      dialogvisible: false
+      dialogvisible: false,
+      // 图片弹出层
+      dialogvisibleQrCode: false
     }
   },
 
@@ -218,10 +234,29 @@ export default {
     goDetail(row) {
       // 查看路由的路径
       this.$router.push('/employees/detail/' + row.id)
+    },
+    // 点击头像生成二维码
+    genQrCode({ staffPhoto }) {
+      this.dialogvisibleQrCode = true
+      // 2.vue:数据驱动视图/组件系统
+      // 数据驱动：数据变化=>视图变化
+      // 数据变化同步 => vue背后 将视图更新（异步的）
+      // 为什么？如果是同步 数据变 视图立即变 太消耗性能
+      // 等所有的数据变化了
+      if (!staffPhoto) return this.$message.error('暂无头像')
+      this.dialogvisibleQrCode = true
+      this.$nextTick(() => {
+        // 方法 等视图更新后触发，获取到最新的视图
+        QRCode.toCanvas(this.$refs.canvas, 'sample text', function(error) {
+          if (error) console.error(error)
+          console.log('success!')
+        })
+      })
     }
   }
 }
 </script>
 
 <style lang='scss'>
+
 </style>

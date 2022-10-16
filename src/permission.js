@@ -15,6 +15,7 @@ router.beforeEach(function(to, from, next) {
   //  首先判断有无token
   if (store.getters.token) {
     // 只有有token的情况下 才会获取用户资料
+    store.dispatch('user/getUserInfo')
     //   如果有token 继续判断是不是去登录页
     if (to.path === '/login') {
       //  表示去的是登录页

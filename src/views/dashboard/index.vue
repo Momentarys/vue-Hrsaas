@@ -1,8 +1,6 @@
 <template>
   <div class="dashboard-container">
-    <div class="dashboard-text">name: {{ name }}</div>
-    <svg-icon icon-class="eye-open" />
-    <UploadExcel :before-upload="beforeUpload" :on-success="handleSuccess" />
+    <Upload-img />
   </div>
 </template>
 
@@ -29,6 +27,7 @@ export default {
       }
       return true
     }
+
   }
 
 }

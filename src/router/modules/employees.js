@@ -10,8 +10,13 @@ export default {
       meta: { title: '员工', icon: 'people' }
     },
     {
-      path: '/employees/detail/:id',
+      path: 'detail/:id',
       component: () => import('@/views/yemian/employees/detail.vue'),
+      hidden: true
+    },
+    {
+      path: 'print/:id',
+      component: () => import('@/views/yemian/employees/print.vue'),
       hidden: true
     }
   ]
